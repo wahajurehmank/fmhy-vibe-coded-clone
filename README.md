@@ -45,7 +45,7 @@ npm run build
 npm start
 ```
 
-`npm run typecheck` checks TypeScript.
+`npm run typecheck` checks TypeScript. `npm run test:security` checks sanitization, unsafe links, fallback behavior and invalid source paths.
 
 ## How automatic updates work
 
@@ -61,11 +61,32 @@ npm start
 
 The raw-content endpoint is used first. GitHub's API is a fallback and supplies the directory tree. If API rate limits become a problem, add `GITHUB_TOKEN` as a **server-only** environment variable in your hosting dashboard and redeploy. Only public repository read access is needed. Do not add a real token to GitHub or prefix its name with `NEXT_PUBLIC_`. For local use, copy `.env.example` to `.env.local`.
 
+## Theme options
+
+Open **Theme** in the top bar. Choose Classic, Brutalism, Bento grid, Claymorphism, Maximalism or Glassmorphism. Layout is independent of light/dark/AMOLED brightness and accent color. Preferences are checked against an allowlist, saved on your device and applied before the first paint. Bento is the default. All five new styles use restrained color, readable type and limited ornament.
+
+The theme settings use a native modal dialog with keyboard focus containment, Escape-to-close and focus restoration. Animations respect reduced-motion preferences. Glass blur is limited to the header to keep scrolling light.
+
+## Security and maintenance
+
+- Next.js upgraded to 16.4.0. The dependency audit on 2026-10-10 reported zero currently listed vulnerabilities.
+- Per-response nonce-based Content Security Policy restricts executable scripts; no inline event handlers or production eval are allowed. Inline styles remain allowed for framework compatibility.
+- Clickjacking protection, MIME sniffing protection, a restrictive permissions policy, referrer policy and HTTPS transport headers are configured.
+- Source URLs stay inside the fixed public FMHY repository. Invalid source paths and malformed search batches are rejected. Cache sizes, search batches and input lengths are bounded.
+- Markdown is sanitized before rendering. Injected scripts, unsafe links, arbitrary content classes and event handlers are removed. External images load lazily without a referrer.
+- Device-local shortcuts and appearance settings are validated before use. API tokens remain server-only.
+- Failed source requests back off; search indexes reuse parsed rows, and speculative directory prefetching is disabled.
+- Dependency update checks are configured in `.github/dependabot.yml`. Enable Dependabot security updates in your GitHub repository settings if desired. Updates still require review and deployment.
+
+Next.js announced a further upstream security update planned for **2026-10-14**, with affected versions and full impact not yet published as of this export. Apply the relevant patch once available. Announcement: https://nextjs.org/blog/upcoming-nextjs-security-update-october-2026
+
+These measures are application hardening, not a security certification. Public API traffic controls across server instances remain a hosting-platform responsibility. No credentials or user records are stored by this application.
+
 ## Included features
 
 - Original responsive design, category navigation, guides, posts and full-text search.
 - In-page entry filtering, community-star filters and section navigation.
-- Light, dark and AMOLED themes with accent choices.
+- Six layout choices, including the five requested styles, plus light/dark/AMOLED modes and muted accent choices.
 - Startpage with web search and device-local shortcuts.
 - Sanitized Markdown rendering and legacy FMHY link mapping.
 - Source attribution and links to upstream contribution workflows.
@@ -76,6 +97,9 @@ This is an independent content mirror, not an official FMHY project. Exact parit
 
 - `app/`: Next.js pages, styles and server API routes.
 - `components/atlas.tsx`: directory interface.
+- `components/appearance.tsx`: accessible layout and appearance settings.
+- `app/themes.css`: theme-specific layouts and calm shared styling.
+- `proxy.ts`: per-response nonce and Content Security Policy.
 - `lib/content.ts`: upstream retrieval, cache, Markdown rendering and search.
 - `data/`: initial source snapshot and catalog.
 - `public/favicon.svg`: site icon.
